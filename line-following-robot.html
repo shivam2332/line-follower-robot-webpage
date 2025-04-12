@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arduino Line-Following Robot Project</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            background-color: #e9ecef;
+            color: #333;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #1a73e8;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 1.4em;
+            color: #34495e;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+
+        a {
+            color: #1a73e8;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        a:hover {
+            color: #0d47a1;
+            text-decoration: underline;
+        }
+
+        .code-section {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Courier New', monospace;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .note-box {
+            background: #e8f0fe;
+            border-left: 4px solid #1a73e8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .resource-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            h2 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Arduino Line-Following Robot Project</h1>
+        <p>
+            Welcome to the Line-Following Robot project! This beginner-friendly Arduino project teaches you how to build a robot that follows a black line on a white surface using two IR sensors and two DC motors. Whether you're new to robotics or looking to explore sensor-based control, this guide provides everything you need to get started, including clear explanations, code, and resources.
+        </p>
+
+        <h2>What Is a Line-Following Robot?</h2>
+        <p>
+            A line-following robot is an autonomous vehicle that navigates by tracking a line (usually black) on a contrasting surface (usually white). It uses infrared (IR) sensors to detect the line's position and adjusts its motors to stay on track. This project is perfect for learning:
+        </p>
+        <ul>
+            <li><strong>Arduino Programming</strong>: Control hardware with code.</li>
+            <li><strong>Sensor Integration</strong>: Read and interpret IR sensor data.</li>
+            <li><strong>Motor Control</strong>: Use PWM to manage speed and direction.</li>
+            <li><strong>Robotics Basics</strong>: Combine sensors and actuators for autonomous behavior.</li>
+        </ul>
+
+        <div class="note-box">
+            <strong>Note</strong>: If your track has a white line on a black surface, you’ll need to invert the sensor logic (swap HIGH and LOW in the code). This guide assumes a black line on white, but we’ll explain how to adapt it.
+        </div>
+
+        <h2>Key Features of This Project</h2>
+        <ul>
+            <li><strong>IR Sensors</strong>: Connected to pins 11 (right) and 12 (left) to detect the line (HIGH on line, LOW off line).</li>
+            <li><strong>DC Motors</strong>: Controlled via pins 5-10, with a default PWM speed of 180 (adjustable).</li>
+            <li><strong>Custom PWM Frequency</strong>: Sets 7812.5 Hz on pins 5 and 6 for smoother motor control, preventing stalls at low speeds.</li>
+            <li><strong>Simple Logic</strong>: The robot moves straight, turns, or stops based on sensor inputs.</li>
+            <li><strong>Modular Design</strong>: Uses <code>#define</code> for easy configuration of pins and speed.</li>
+        </ul>
+
+        <h2>How Does It Work?</h2>
+        <p>
+            The robot reads the IR sensors every loop:
+        </p>
+        <ul>
+            <li><strong>Both sensors LOW</strong> (off line): Moves forward at full speed.</li>
+            <li><strong>Right sensor HIGH, Left LOW</strong> (right on line): Turns right by reversing the right motor.</li>
+            <li><strong>Left sensor HIGH, Right LOW</strong> (left on line): Turns left by reversing the left motor.</li>
+            <li><strong>Both sensors HIGH</strong> (both on line): Stops, assuming it’s at the end of the track.</li>
+        </ul>
+        <p>
+            The code adjusts motor direction and speed using a custom <code>rotateMotor</code> function, and a PWM frequency tweak ensures the motors run smoothly even at lower speeds.
+        </p>
+
+        <div class="note-box">
+            <strong>Confused about PWM?</strong> PWM (Pulse Width Modulation) controls motor speed by rapidly switching power on and off. The <code>TCCR0B</code> setting in the code increases the switching frequency, making the motors respond better to low PWM values (e.g., for gentle turns).
+        </div>
+
+        <h2>How to Build and Use This Robot</h2>
+        <p>
+            Follow these steps to create your own line-following robot:
+        </p>
+        <ol>
+            <li><strong>Gather Components</strong>:
+                <ul>
+                    <li>Arduino board (e.g., Uno or Nano).</li>
+                    <li>2 IR sensors (e.g., TCRT5000).</li>
+                    <li>2 DC motors with a motor driver (e.g., L298N or L293D).</li>
+                    <li>Robot chassis, wheels, and a battery pack.</li>
+                    <li>Jumper wires and a breadboard (optional).</li>
+                </ul>
+            </li>
+            <li><strong>Wire the Circuit</strong>:
+                <ul>
+                    <li>Right IR sensor: Signal to pin 11, VCC to 5V, GND to GND.</li>
+                    <li>Left IR sensor: Signal to pin 12, VCC to 5V, GND to GND.</li>
+                    <li>Right motor: Enable to pin 6, IN1 to pin 7, IN2 to pin 8 (via driver).</li>
+                    <li>Left motor: Enable to pin 5, IN1 to pin 9, IN2 to pin 10 (via driver).</li>
+                    <li>Power the driver and Arduino appropriately (check voltage ratings).</li>
+                </ul>
+            </li>
+            <li><strong>Prepare the Track</strong>: Draw or tape a black line (about 1-2 cm wide) on a white surface. Ensure good contrast for sensor detection.</li>
+            <li><strong>Upload the Code</strong>: Copy the code below, paste it into the Arduino IDE, and upload it to your board.</li>
+            <li><strong>Test and Calibrate</strong>:
+                <ul>
+                    <li>Place the robot on the track and power it on.</li>
+                    <li>Use the Serial Monitor (<code>Serial.begin(9600)</code> and <code>Serial.println</code>) to debug sensor readings if needed.</li>
+                    <li>Adjust <code>MOTOR_SPEED</code> (0-255) or sensor positions for smoother tracking.</li>
+                </ul>
+            </li>
+        </ol>
+
+        <div class="note-box">
+            <strong>Troubleshooting Tip</strong>: If the robot doesn’t follow the line correctly, check:
+            <ul>
+                <li>Sensor alignment (should be 1-2 cm above the surface).</li>
+                <li>Lighting conditions (bright light can interfere with IR sensors).</li>
+                <li>Line contrast (test with a multimeter or Serial output).</li>
+                <li>Motor wiring (swap IN1/IN2 if a motor spins the wrong way).</li>
+            </ul>
+        </div>
+
+        <h2>Arduino Code</h2>
+        <div class="code-section">
+            <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+            <pre><code id="code-block">#define IR_SENSOR_RIGHT 11
+#define IR_SENSOR_LEFT 12
+#define MOTOR_SPEED 180
+
+//Right motor
+int enableRightMotor=6;
+int rightMotorPin1=7;
+int rightMotorPin2=8;
+
+//Left motor
+int enableLeftMotor=5;
+int leftMotorPin1=9;
+int leftMotorPin2=10;
+
+void setup()
+{
+  // Set PWM frequency for pins 5 and 6 to 7812.5 Hz
+  TCCR0B = TCCR0B & B11111000 | B00000010;
+  
+  pinMode(enableRightMotor, OUTPUT);
+  pinMode(rightMotorPin1, OUTPUT);
+  pinMode(rightMotorPin2, OUTPUT);
+  
+  pinMode(enableLeftMotor, OUTPUT);
+  pinMode(leftMotorPin1, OUTPUT);
+  pinMode(leftMotorPin2, OUTPUT);
+
+  pinMode(IR_SENSOR_RIGHT, INPUT);
+  pinMode(IR_SENSOR_LEFT, INPUT);
+  rotateMotor(0,0);   
+}
+
+void loop()
+{
+  int rightIRSensorValue = digitalRead(IR_SENSOR_RIGHT);
+  int leftIRSensorValue = digitalRead(IR_SENSOR_LEFT);
+
+  if (rightIRSensorValue == LOW && leftIRSensorValue == LOW)
+  {
+    rotateMotor(MOTOR_SPEED, MOTOR_SPEED);
+  }
+  else if (rightIRSensorValue == HIGH && leftIRSensorValue == LOW)
+  {
+      rotateMotor(-MOTOR_SPEED, MOTOR_SPEED); 
+  }
+  else if (rightIRSensorValue == LOW && leftIRSensorValue == HIGH)
+  {
+      rotateMotor(MOTOR_SPEED, -MOTOR_SPEED); 
+  } 
+  else 
+  {
+    rotateMotor(0, 0);
+  }
+}
+
+void rotateMotor(int rightMotorSpeed, int leftMotorSpeed)
+{
+  if (rightMotorSpeed < 0)
+  {
+    digitalWrite(rightMotorPin1,LOW);
+    digitalWrite(rightMotorPin2,HIGH);    
+  }
+  else if (rightMotorSpeed > 0)
+  {
+    digitalWrite(rightMotorPin1,HIGH);
+    digitalWrite(rightMotorPin2,LOW);      
+  }
+  else
+  {
+    digitalWrite(rightMotorPin1,LOW);
+    digitalWrite(rightMotorPin2,LOW);      
+  }
+
+  if (leftMotorSpeed < 0)
+  {
+    digitalWrite(leftMotorPin1,LOW);
+    digitalWrite(leftMotorPin2,HIGH);    
+  }
+  else if (leftMotorSpeed > 0)
+  {
+    digitalWrite(leftMotorPin1,HIGH);
+    digitalWrite(leftMotorPin2,LOW);      
+  }
+  else 
+  {
+    digitalWrite(leftMotorPin1,LOW);
+    digitalWrite(leftMotorPin2,LOW);      
+  }
+  analogWrite(enableRightMotor, abs(rightMotorSpeed));
+  analogWrite(enableLeftMotor, abs(leftMotorSpeed));    
+}
+</code></pre>
+        </div>
+
+        <h2>Useful Resources</h2>
+        <p>
+            These resources will help you understand the project, troubleshoot issues, and explore further:
+        </p>
+        <div class="resources-grid">
+            <div class="resource-card">
+                <h3>Arduino Reference</h3>
+                <p>Official docs for functions like <code>pinMode</code>, <code>digitalRead</code>, and <code>analogWrite</code>.</p>
+                <a href="https://www.arduino.cc/reference/en/" target="_blank">Visit</a>
+            </div>
+            <div class="resource-card">
+                <h3>Arduino Tutorials</h3>
+                <p>Step-by-step guides on wiring, coding, and building projects.</p>
+                <a href="https://www.arduino.cc/en/Tutorial/HomePage" target="_blank">Visit</a>
+            </div>
+            <div class="resource-card">
+                <h3>Adafruit Motor Guide</h3>
+                <p>Learn about DC motors and drivers like L298N or L293D.</p>
+                <a href="https://learn.adafruit.com/adafruit-motor-shield/motor-types" target="_blank">Visit</a>
+            </div>
+            <div class="resource-card">
+                <h3>Arduino Timer Reference</h3>
+                <p>Understand PWM frequency tweaks (e.g., <code>TCCR0B</code>).</p>
+                <a href="https://www.arduino.cc/en/Reference/Timer" target="_blank">Visit</a>
+            </div>
+            <div class="resource-card">
+                <h3>Arduino Project Hub</h3>
+                <p>Community projects for inspiration and troubleshooting.</p>
+                <a href="https://create.arduino.cc/projecthub" target="_blank">Visit</a>
+            </div>
+            <div class="resource-card">
+                <h3>SparkFun IR Sensor Guide</h3>
+                <p>Details on using IR sensors like TCRT5000 for line detection.</p>
+                <a href="https://learn.sparkfun.com/tutorials/ir-communication" target="_blank">Visit</a>
+            </div>
+        </div>
+
+        <h2>Common Questions and Clarifications</h2>
+        <p>
+            Here are answers to questions beginners often have:
+        </p>
+        <ul>
+            <li><strong>Why does the robot stop when both sensors are HIGH?</strong> This assumes the robot has reached the end of the track (e.g., a solid black area). You can modify the code to keep moving if your track doesn’t end this way.</li>
+            <li><strong>What if my sensors read HIGH off the line?</strong> Swap <code>HIGH</code> and <code>LOW</code> in the <code>loop</code> function’s conditions. Test with <code>Serial.println</code> to confirm sensor behavior.</li>
+            <li><strong>Why adjust PWM frequency?</strong> TT gear motors often stall at low PWM values with Arduino’s default frequency. The <code>TCCR0B</code> tweak makes them run smoothly at lower speeds.</li>
+            <li><strong>Can I use different pins?</strong> Yes! Update the <code>#define</code> and <code>int</code> pin assignments, but ensure enable pins (5, 6) support PWM (marked with ~ on Arduino).</li>
+            <li><strong>My robot wobbles or overshoots!</strong> Try lowering <code>MOTOR_SPEED</code> or implement PID control for smoother tracking (search “Arduino PID line follower” for tutorials).</li>
+        </ul>
+
+        <h2>Next Steps and Enhancements</h2>
+        <p>
+            Once your robot is working, try these improvements:
+        </p>
+        <ul>
+            <li><strong>Add Serial Debugging</strong>: Use <code>Serial.begin(9600)</code> and <code>Serial.println(rightIRSensorValue)</code> to monitor sensor data.</li>
+            <li><strong>Implement PID Control</strong>: For precise line tracking, use proportional-integral-derivative logic to adjust motor speeds dynamically.</li>
+            <li><strong>Add More Sensors</strong>: Use 3+ IR sensors for better line detection on complex tracks.</li>
+            <li><strong>Customize Speed</strong>: Create variable speeds for straight paths vs. turns.</li>
+            <li><strong>Share Your Work</strong>: Post your robot on the <a href="https://forum.arduino.cc/" target="_blank">Arduino Forum</a> or social media with #ArduinoProjects.</li>
+        </ul>
+
+        <footer>
+            <p>Created with ❤️ for robotics enthusiasts | Questions? Join the <a href="https://forum.arduino.cc/" target="_blank">Arduino Community</a></p>
+        </footer>
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('code-block').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Code copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy code. Please select and copy manually.');
+            });
+        }
+    </script>
+</body>
+</html>
